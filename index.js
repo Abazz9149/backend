@@ -66,6 +66,29 @@ app.post('/api/notify/table-join', async (req, res) => {
   }
 });
 
+// Route: Notify Cafe Owner about a new Booking
+app.post('/api/notify/owner-booking', async (req, res) => {
+  const { ownerToken, customerName, tableName, timeSlot } = req.body;
+
+  if (!ownerToken) return res.status(400).send('No owner token provided');
+
+  const message = {
+    notification: {
+      title: 'New Booking! ☕',
+      body: `${customerName} just booked ${tableName} for ${timeSlot}.`,
+    },
+    token: ownerToken,
+  };
+
+  try {
+    const response = await admin.messaging().send(message);
+    res.status(200).json({ success: true, messageId: response });
+  } catch (error) {
+    console.error('Error sending owner notification:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Basic health check route
 app.get('/', (req, res) => res.send('CafeMeet Notification API is Active!'));
 
